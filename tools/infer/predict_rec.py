@@ -27,6 +27,7 @@ import math
 import time
 import traceback
 import paddle
+import csv
 
 import tools.infer.utility as utility
 from ppocr.postprocess import build_post_process
@@ -744,10 +745,18 @@ def main(args):
         logger.info(traceback.format_exc())
         logger.info(E)
         exit()
-    for ino in range(len(img_list)):
-        logger.info(
-            "Predicts of {}:{}".format(valid_image_file_list[ino], rec_res[ino])
-        )
+    csv_file_path = os.path.join(args.output_dir, "recognition_results.csv")
+    with open(csv_file_path, mode='w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file)
+        csv_writer.writerow(['Image', 'Text', 'Confidence'])  # Заголовки столбцов
+
+        for ino in range(len(img_list)):
+            image_filename = os.path.basename(valid_image_file_list[ino])
+            text, confidence = rec_res[ino]
+            csv_writer.writerow([image_filename, text, confidence])
+            logger.info(
+                "Predicts of {}:{}".format(valid_image_file_list[ino], rec_res[ino])
+            )    
     if args.benchmark:
         text_recognizer.autolog.report()
 
